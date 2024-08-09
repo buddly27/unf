@@ -2,6 +2,7 @@ add_library(pyUnf SHARED
     module.cpp
     wrapBroker.cpp
     wrapCapturePredicate.cpp
+    wrapInspector.cpp
     wrapNotice.cpp
     wrapTransaction.cpp
 )
@@ -18,9 +19,9 @@ target_compile_definitions(
 
 set_target_properties(pyUnf
     PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/src/python/$<CONFIG>/unf"
-        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/src/python/$<CONFIG>/unf"
-        ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/src/python/$<CONFIG>/unf"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/unf"
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/unf"
+        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/unf"
 )
 
 target_include_directories(pyUnf
@@ -59,6 +60,7 @@ target_compile_definitions(
         MFB_PACKAGE_MODULE=unf
         MFB_PACKAGE_NAME=unf
         MFB_ALT_PACKAGE_NAME=unf
+	UNF_EXPORTS=1
 )
 
 file(

@@ -31,7 +31,7 @@ NoticeTransaction::NoticeTransaction(
 }
 
 NoticeTransaction::NoticeTransaction(
-    const PXR_NS::UsdStageRefPtr& stage, const CapturePredicateFunc& predicate)
+    const UsdStageRefPtr& stage, const CapturePredicateFunc& predicate)
     : _broker(Broker::Create(stage))
 {
     _broker->BeginTransaction(predicate);
