@@ -4,6 +4,7 @@ add_library(pyUnf SHARED
     wrapCapturePredicate.cpp
     wrapNotice.cpp
     wrapTransaction.cpp
+    wrapReporterManager.cpp
 )
 
 # Supress warnings from Boost Python regarding deprecated Bind placeholders.

@@ -1,0 +1,17 @@
+{
+  "Plugins": [
+    {
+      "Info": {
+        "Types": {
+          "Test::ChildReporter": {
+            "bases": [ "unf::Reporter" ]
+          }
+        }
+      },
+      "LibraryPath": "$<TARGET_FILE:unfTestChildReporter>",
+      "Name": "ChildReporter",
+      "Type": "library"
+    }
+  ]
+}
+  

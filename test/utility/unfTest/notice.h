@@ -64,6 +64,39 @@ class OutputNotice2 : public unf::UnfNotice::StageNoticeImpl<OutputNotice2> {
     UNF_API OutputNotice2(const InputNotice&);
 };
 
+class TestReporterNotice1 : public PXR_NS::TfNotice {
+  public:
+    UNF_API TestReporterNotice1(std::string msg) : _msg("TestReporterNotice1")
+    {
+    }
+    UNF_API virtual ~TestReporterNotice1() = default;
+
+    UNF_API const std::string& GetMsg() const { return _msg; }
+
+  private:
+    std::string _msg;
+};
+
+class TestReporterNotice2 : public PXR_NS::TfNotice {
+  public:
+    UNF_API TestReporterNotice2() : _msg("TestReporterNotice2") {}
+    UNF_API virtual ~TestReporterNotice2() = default;
+
+    UNF_API const std::string& GetMsg() const { return _msg; }
+
+  private:
+    std::string _msg;
+};
+
+class ChildReporterNotice : public PXR_NS::TfNotice {
+  public:
+    UNF_API ChildReporterNotice() : _msg("ChildReporterNotice") {}
+    UNF_API virtual ~ChildReporterNotice() = default;
+
+  private:
+    std::string _msg;
+};
+
 }  // namespace Test
 
 #endif  // TEST_USD_NOTICE_FRAMEWORK_NOTICE_H

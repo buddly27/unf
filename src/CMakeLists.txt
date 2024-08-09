@@ -4,9 +4,11 @@ add_library(unf
     unf/dispatcher.cpp
     unf/notice.cpp
     unf/transaction.cpp
+    unf/reporter.cpp
+    unf/reporterManager.cpp
 )
 
-# Suppress warning sfrom USD regarding deprecated TBB features.
+# Suppress warnings from USD regarding deprecated TBB features.
 # https://github.com/PixarAnimationStudios/OpenUSD/issues/1471
 target_compile_definitions(unf
     PUBLIC TBB_SUPPRESS_DEPRECATED_MESSAGES

@@ -1,2 +1,5 @@
 add_subdirectory(newStageDispatcher)
 add_subdirectory(newDispatcher)
+add_subdirectory(testReporter1)
+add_subdirectory(testReporter2)
+add_subdirectory(childReporter)
