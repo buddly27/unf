@@ -12,6 +12,9 @@
 
 namespace unf {
 
+class Broker;
+class Inspector;
+
 /// \class Registry
 ///
 /// Generic class that manages and stored reference pointers associated
@@ -79,7 +82,7 @@ class Registry {
     MapType _map;
 
     friend Broker;
-    friend ReporterManager;
+    friend Inspector;
 };
 
 }  // namespace unf

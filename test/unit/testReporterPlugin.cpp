@@ -1,5 +1,5 @@
 #include <unf/reporter.h>
-#include <unf/reporterManager.h>
+#include <unf/inspector.h>
 #include <unf/broker.h>
 #include <unf/notice.h>
 
@@ -16,7 +16,7 @@ using Listener = ::Test::Listener<
 TEST(ReporterPluginTest, Notice)
 {
     auto stage = PXR_NS::UsdStage::CreateInMemory();
-    auto manager = unf::ReporterManager::Create(stage);
+    auto inspector = unf::Inspector::Create(stage);
     auto broker = unf::Broker::Create(stage);
 
     Listener listener(stage);

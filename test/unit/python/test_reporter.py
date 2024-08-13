@@ -8,7 +8,7 @@ import unf_test
 def test_reporter_notice():
     """Ensure that reporter's notices are received."""
     stage = Usd.Stage.CreateInMemory()
-    unf.ReporterManager.Create(stage)
+    unf.Inspector.Create(stage)
     unf.Broker.Create(stage)
 
     received = []

@@ -66,15 +66,15 @@ target_link_libraries(testUnitObjectsChanged
 )
 gtest_discover_tests(testUnitObjectsChanged)
 
-add_executable(testUnitReporterManager testReporterManager.cpp)
-target_link_libraries(testUnitReporterManager
+add_executable(testUnitInspector testInspector.cpp)
+target_link_libraries(testUnitInspector
     PRIVATE
         unf
         unfTest
         GTest::gtest
         GTest::gtest_main
 )
-gtest_discover_tests(testUnitReporterManager)
+gtest_discover_tests(testUnitInspector)
 
 add_executable(testUnitReporter testReporter.cpp)
 target_link_libraries(testUnitReporter

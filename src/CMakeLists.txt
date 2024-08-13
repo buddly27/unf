@@ -2,10 +2,10 @@ add_library(unf
     unf/broker.cpp
     unf/capturePredicate.cpp
     unf/dispatcher.cpp
+    unf/inspector.cpp
     unf/notice.cpp
     unf/transaction.cpp
     unf/reporter.cpp
-    unf/reporterManager.cpp
 )
 
 # Suppress warnings from USD regarding deprecated TBB features.

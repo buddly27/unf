@@ -1,4 +1,4 @@
-#include "unf/reporterManager.h"
+#include "unf/inspector.h"
 
 #include <pxr/base/tf/makePyConstructor.h>
 #include <pxr/base/tf/pyPtrHelpers.h>
@@ -12,10 +12,10 @@ using namespace unf;
 
 PXR_NAMESPACE_USING_DIRECTIVE
 
-void wrapReporterManager()
+void wrapInspector()
 {
-    class_<ReporterManager, ReporterManagerWeakPtr, boost::noncopyable>(
-        "ReporterManager",
+    class_<Inspector, InspectorWeakPtr, boost::noncopyable>(
+        "Inspector",
         "Intermediate object handling the creation and management of Reporter "
         "instances per stage",
         no_init)
@@ -24,28 +24,28 @@ void wrapReporterManager()
 
         .def(
             "Create",
-            &ReporterManager::Create,
+            &Inspector::Create,
             arg("stage"),
-            "Create a manager from a Usd Stage.",
+            "Create an inspector from a Usd Stage.",
             return_value_policy<TfPyRefPtrFactory<> >())
         .staticmethod("Create")
 
         .def(
             "GetNumReporters",
-            &ReporterManager::GetNumReporters,
+            &Inspector::GetNumReporters,
             "Return number of reporters created")
 
         .def(
-            "GetNumManagers",
-            &ReporterManager::GetNumManagers,
-            "Return number of factory generators added")
-        .staticmethod("GetNumManagers")
+            "GetNumInspectors",
+            &Inspector::GetNumInspectors,
+            "Return number of inspector created")
+        .staticmethod("GetNumInspectors")
 
         .def(
             "Reset",
-            (void (ReporterManager::*)()) & ReporterManager::Reset,
-            "Un-register manager")
+            (void (Inspector::*)()) & Inspector::Reset,
+            "Un-register inspector")
 
-        .def("ResetAll", &ReporterManager::ResetAll, "Un-register all managers")
+        .def("ResetAll", &Inspector::ResetAll, "Un-register all inspectors")
         .staticmethod("ResetAll");
 }

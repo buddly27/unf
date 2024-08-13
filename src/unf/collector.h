@@ -14,7 +14,7 @@
 namespace unf {
 
 class Broker;
-class ReporterManager;
+class Inspector;
 
 template <typename T>
 using CollectorItemMap = std::unordered_map<std::string, PXR_NS::TfRefPtr<T>>;
@@ -158,7 +158,7 @@ class Collector {
     CollectorItemMap<T> _items;
 
     friend Broker;
-    friend ReporterManager;
+    friend Inspector;
 };
 
 }  // namespace unf

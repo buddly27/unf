@@ -18,41 +18,41 @@
 
 namespace unf {
 
-class ReporterManager;
+class Inspector;
 
-/// Convenient alias for ReporterManager reference pointer.
-using ReporterManagerPtr = TfRefPtr<ReporterManager>;
+/// Convenient alias for Inspector reference pointer.
+using InspectorPtr = TfRefPtr<Inspector>;
 
-/// Convenient alias for ReporterManager weak pointer.
-using ReporterManagerWeakPtr = TfWeakPtr<ReporterManager>;
+/// Convenient alias for Inspector weak pointer.
+using InspectorWeakPtr = TfWeakPtr<Inspector>;
 
 /// Convenient alias for Reporter reference pointer.
 using ReporterPtr = PXR_NS::TfRefPtr<Reporter>;
 
-/// \class ReporterManager
+/// \class Inspector
 ///
 /// \brief
 /// Intermediate object handling the creation and management of Reporter
 /// instances per stage.
-class ReporterManager : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
+class Inspector : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
   public:
     /// \brief
-    /// Create a manager from a Usd Stage.
+    /// Create an inpector from a Usd Stage.
     ///
-    /// If a manager has already been created from this \p stage, it will be
-    /// returned. Otherwise, a new one will be created and returned.
-    UNF_API static ReporterManagerWeakPtr Create(
+    /// If an inspector has already been created from this \p stage, it
+    /// will be returned. Otherwise, a new one will be created and returned.
+    UNF_API static InspectorWeakPtr Create(
         const PXR_NS::UsdStageWeakPtr& stage);
 
-    UNF_API virtual ~ReporterManager() = default;
+    UNF_API virtual ~Inspector() = default;
 
     /// \brief
     /// Return number of reporters created.
     UNF_API size_t GetNumReporters();
 
     /// \brief
-    /// Return number of factory generators added.
-    UNF_API static size_t GetNumManagers();
+    /// Return number of inspectors created.
+    UNF_API static size_t GetNumInspectors();
 
     /// \brief
     /// Return reporter reference associated with reporter of class `T`.
@@ -74,33 +74,33 @@ class ReporterManager : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     }
 
     /// \brief
-    /// Un-register manager.
+    /// Un-register inspector.
     ///
     /// \warning
-    /// The manager is not safe to use after this call.
+    /// The inspector is not safe to use after this call.
     UNF_API void Reset();
 
     /// \brief
-    /// Un-register manager associated with Usd Stage.
+    /// Un-register inspector associated with Usd Stage.
     UNF_API static void Reset(const PXR_NS::UsdStageWeakPtr& stage);
 
     /// \brief
-    /// Un-register all managers.
+    /// Un-register all inspectors.
     UNF_API static void ResetAll();
 
   private:
-    ReporterManager(const PXR_NS::UsdStageWeakPtr& stage);
+    Inspector(const PXR_NS::UsdStageWeakPtr& stage);
 
-    /// Record each hashed stage pointer to its corresponding manager pointer.
-    static Registry<ReporterManager> _registry;
+    /// Record each hashed stage pointer to its corresponding inspector pointer.
+    static Registry<Inspector> _registry;
 
-    /// Usd Stage associated with manager.
+    /// Usd Stage associated with inspector.
     PXR_NS::UsdStageWeakPtr _stage;
 
     /// Collection of Reporter instances.
     Collector<Reporter> _collector;
 
-    friend class Registry<ReporterManager>;
+    friend class Registry<Inspector>;
 };
 
 }  // namespace unf

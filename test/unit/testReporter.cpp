@@ -1,5 +1,5 @@
 #include <unf/reporter.h>
-#include <unf/reporterManager.h>
+#include <unf/inspector.h>
 #include <unf/broker.h>
 #include <unf/notice.h>
 
@@ -19,43 +19,43 @@ using Listener = ::Test::Listener<
 TEST(ReporterTest, AddReporters)
 {
     auto stage1 = PXR_NS::UsdStage::CreateInMemory();
-    auto manager1 = unf::ReporterManager::Create(stage1);
-    size_t reporterNb1 = manager1->GetNumReporters();
+    auto inspector1 = unf::Inspector::Create(stage1);
+    size_t reporterNb1 = inspector1->GetNumReporters();
 
-    manager1->AddReporter<::Test::TestReporter1>();
-    manager1->AddReporter<::Test::ChildReporter>();
+    inspector1->AddReporter<::Test::TestReporter1>();
+    inspector1->AddReporter<::Test::ChildReporter>();
 
-    ASSERT_EQ(manager1->GetNumReporters(), reporterNb1 + 2);
-    ASSERT_EQ(unf::ReporterManager::GetNumManagers(), 1);
+    ASSERT_EQ(inspector1->GetNumReporters(), reporterNb1 + 2);
+    ASSERT_EQ(unf::Inspector::GetNumInspectors(), 1);
 
-    manager1->AddReporter<::Test::TestReporter2>();
-    ASSERT_EQ(manager1->GetNumReporters(), reporterNb1 + 3);
+    inspector1->AddReporter<::Test::TestReporter2>();
+    ASSERT_EQ(inspector1->GetNumReporters(), reporterNb1 + 3);
 
     auto stage2 = PXR_NS::UsdStage::CreateInMemory();
-    auto manager2 = unf::ReporterManager::Create(stage2);
-    size_t reporterNb2 = manager2->GetNumReporters();
-    ASSERT_NE(reporterNb2, manager1->GetNumReporters());
-    ASSERT_EQ(unf::ReporterManager::GetNumManagers(), 2);
+    auto inspector2 = unf::Inspector::Create(stage2);
+    size_t reporterNb2 = inspector2->GetNumReporters();
+    ASSERT_NE(reporterNb2, inspector1->GetNumReporters());
+    ASSERT_EQ(unf::Inspector::GetNumInspectors(), 2);
 
-    manager2->AddReporter<::Test::ChildReporter>();
-    ASSERT_EQ(manager1->GetNumReporters(), reporterNb1 + 3);
-    ASSERT_EQ(manager2->GetNumReporters(), reporterNb2 + 1);
+    inspector2->AddReporter<::Test::ChildReporter>();
+    ASSERT_EQ(inspector1->GetNumReporters(), reporterNb1 + 3);
+    ASSERT_EQ(inspector2->GetNumReporters(), reporterNb2 + 1);
 }
 
 TEST(ReporterTest, GetReporter)
 {
     auto stage = PXR_NS::UsdStage::CreateInMemory();
-    auto manager = unf::ReporterManager::Create(stage);
-    manager->AddReporter<::Test::TestReporter1>();
+    auto inspector = unf::Inspector::Create(stage);
+    inspector->AddReporter<::Test::TestReporter1>();
 
-    ASSERT_NE(manager->GetReporter<::Test::TestReporter1>(), nullptr);
-    ASSERT_EQ(manager->GetReporter<::Test::TestReporter2>(), nullptr);
+    ASSERT_NE(inspector->GetReporter<::Test::TestReporter1>(), nullptr);
+    ASSERT_EQ(inspector->GetReporter<::Test::TestReporter2>(), nullptr);
 }
 
 TEST(ReporterTest, Notice)
 {
     auto stage = PXR_NS::UsdStage::CreateInMemory();
-    auto manager = unf::ReporterManager::Create(stage);
+    auto inspector = unf::Inspector::Create(stage);
     auto broker = unf::Broker::Create(stage);
 
     Listener listener(stage);
@@ -66,7 +66,7 @@ TEST(ReporterTest, Notice)
     ASSERT_EQ(listener.Received<::Test::TestReporterNotice2>(), 0);
     ASSERT_EQ(listener.Received<::Test::ChildReporterNotice>(), 0);
 
-    manager->AddReporter<::Test::TestReporter1>();
+    inspector->AddReporter<::Test::TestReporter1>();
 
     stage->DefinePrim(SdfPath{"/B"});
 
@@ -74,7 +74,7 @@ TEST(ReporterTest, Notice)
     ASSERT_EQ(listener.Received<::Test::TestReporterNotice2>(), 0);
     ASSERT_EQ(listener.Received<::Test::ChildReporterNotice>(), 0);
 
-    manager->AddReporter<::Test::TestReporter2>();
+    inspector->AddReporter<::Test::TestReporter2>();
 
     stage->DefinePrim(SdfPath{"/C"});
 
@@ -82,7 +82,7 @@ TEST(ReporterTest, Notice)
     ASSERT_EQ(listener.Received<::Test::TestReporterNotice2>(), 1);
     ASSERT_EQ(listener.Received<::Test::ChildReporterNotice>(), 0);
 
-    manager->AddReporter<::Test::ChildReporter>();
+    inspector->AddReporter<::Test::ChildReporter>();
 
     stage->DefinePrim(SdfPath{"/D"});
 

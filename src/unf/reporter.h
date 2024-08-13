@@ -52,7 +52,7 @@ class Reporter : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     /// Usd Stage associated with reporter.
     UsdStageWeakPtr _stage;
 
-    friend class ReporterManager;
+    friend class Inspector;
 };
 
 /// \class ReporterFactory
