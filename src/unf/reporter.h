@@ -9,7 +9,10 @@
 #include <pxr/usd/usd/notice.h>
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usd/stage.h>
+
 #include <vector>
+#include <typeinfo>
+#include <string>
 
 namespace unf {
 
@@ -30,6 +33,8 @@ class Reporter : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
   public:
     /// Revoke all registered listeners on destruction.
     virtual ~Reporter();
+
+    virtual std::string GetIdentifier() const { return typeid(*this).name(); }
 
     /// Register listeners to PXR_NS::TfNotice derived notices.
     virtual void Register() = 0;

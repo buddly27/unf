@@ -4,8 +4,10 @@
 /// \file unf/broker.h
 
 #include "unf/api.h"
+#include "unf/collector.h"
 #include "unf/capturePredicate.h"
 #include "unf/notice.h"
+#include "unf/registry.h"
 
 #include <pxr/base/plug/plugin.h>
 #include <pxr/base/plug/registry.h>
@@ -37,6 +39,9 @@ using BrokerWeakPtr = PXR_NS::TfWeakPtr<Broker>;
 
 /// Convenient alias for Dispatcher reference pointer.
 using DispatcherPtr = PXR_NS::TfRefPtr<Dispatcher>;
+
+/// Convenient alias for Dispatcher weak pointer.
+using DispatcherWeakPtr = PXR_NS::TfWeakPtr<Dispatcher>;
 
 /// \class Broker
 ///
@@ -131,7 +136,10 @@ class Broker : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     /// \note
     /// The associated stage will be used as sender.
     template <class UnfNotice, class... Args>
-    void Send(Args&&... args);
+    void Send(Args&&... args)
+    {
+        Send(UnfNotice::Create(std::forward<Args>(args)...));
+    }
 
     /// \brief
     /// Send a UnfNotice::StageNotice notice via the broker.
@@ -141,14 +149,19 @@ class Broker : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     UNF_API void Send(const UnfNotice::StageNoticeRefPtr&);
 
     /// Return dispatcher reference associated with \p identifier.
-    UNF_API DispatcherPtr& GetDispatcher(std::string identifier);
+    UNF_API DispatcherWeakPtr GetDispatcher(std::string identifier);
 
     /// \brief
     /// Create and register a new dispatcher.
     ///
     /// This will call the Dispatcher::Register method.
     template <class T>
-    void AddDispatcher();
+    void AddDispatcher()
+    {
+        auto self = PXR_NS::TfCreateWeakPtr(this);
+        const auto& dispatcher = _collector.Add<T>(self);
+        dispatcher->Register();
+    }
 
     /// \brief
     /// Un-register broker.
@@ -163,35 +176,8 @@ class Broker : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
   private:
     Broker(const PXR_NS::UsdStageWeakPtr&);
 
-    /// Un-register brokers targeting expired stages.
-    static void _CleanCache();
-
-    /// Discover all dispatchers registered as plugins.
-    void _DiscoverDispatchers();
-
-    /// Register dispacther within broker by its identifier.
-    UNF_API void _Add(const DispatcherPtr&);
-
-    /// Create and register dispacther within broker without running the
-    /// Dispatcher::Register method.
-    template <class T>
-    DispatcherPtr _AddDispatcher();
-
-    /// Load all dispatchers from discovered factory types.
-    template <class OutputPtr, class OutputFactory>
-    void _LoadFromPlugins(const PXR_NS::TfType& type);
-
-    struct UsdStageWeakPtrHasher {
-        std::size_t operator()(const PXR_NS::UsdStageWeakPtr& ptr) const
-        {
-            return hash_value(ptr);
-        }
-    };
-
     /// Record each hashed stage pointer to its corresponding broker pointer.
-    static std::unordered_map<
-        PXR_NS::UsdStageWeakPtr, BrokerPtr, UsdStageWeakPtrHasher>
-        Registry;
+    static Registry<Broker> _registry;
 
     class _NoticeMerger {
       public:
@@ -217,76 +203,11 @@ class Broker : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     /// List of NoticeMerger objects which handle transactions.
     std::vector<_NoticeMerger> _mergers;
 
-    /// List of registered Dispatchers.
-    std::unordered_map<std::string, DispatcherPtr> _dispatcherMap;
+    /// Collection of Dispatcher instances.
+    Collector<Dispatcher> _collector;
+
+    friend class Registry<Broker>;
 };
-
-template <class UnfNotice, class... Args>
-void Broker::Send(Args&&... args)
-{
-    PXR_NS::TfRefPtr<UnfNotice> _notice =
-        UnfNotice::Create(std::forward<Args>(args)...);
-
-    Send(_notice);
-}
-
-template <class T>
-DispatcherPtr Broker::_AddDispatcher()
-{
-    static_assert(
-        std::is_base_of<Dispatcher, T>::value,
-        "Expecting a type derived from unf::Dispatcher.");
-
-    auto self = PXR_NS::TfCreateWeakPtr(this);
-    DispatcherPtr dispatcher = PXR_NS::TfCreateRefPtr(new T(self));
-    _Add(dispatcher);
-    return dispatcher;
-}
-
-template <class T>
-void Broker::AddDispatcher()
-{
-    const auto& dispatcher = _AddDispatcher<T>();
-    dispatcher->Register();
-}
-
-template <class OutputPtr, class OutputFactory>
-void Broker::_LoadFromPlugins(const PXR_NS::TfType& type)
-{
-    PXR_NAMESPACE_USING_DIRECTIVE
-
-    const PXR_NS::PlugPluginPtr plugin =
-        PXR_NS::PlugRegistry::GetInstance().GetPluginForType(type);
-
-    if (!plugin) {
-        return;
-    }
-
-    if (!plugin->Load()) {
-        TF_CODING_ERROR(
-            "Failed to load plugin %s for %s",
-            plugin->GetName().c_str(),
-            type.GetTypeName().c_str());
-        return;
-    }
-
-    OutputPtr output;
-    OutputFactory* factory = type.GetFactory<OutputFactory>();
-
-    if (factory) {
-        output = factory->New(TfCreateWeakPtr(this));
-    }
-
-    if (!output) {
-        TF_CODING_ERROR(
-            "Failed to manufacture %s from plugin %s",
-            type.GetTypeName().c_str(),
-            plugin->GetName().c_str());
-        return;
-    }
-
-    _Add(output);
-}
 
 }  // namespace unf
 

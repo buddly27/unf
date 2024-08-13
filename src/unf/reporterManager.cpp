@@ -7,77 +7,37 @@
 
 namespace unf {
 
-std::unordered_map<
-    UsdStageWeakPtr, ReporterManagerPtr, ReporterManager::UsdStageWeakPtrHasher>
-    ReporterManager::Registry;
+Registry<ReporterManager> ReporterManager::_registry;
 
 ReporterManager::ReporterManager(const PXR_NS::UsdStageWeakPtr& stage)
     : _stage(stage)
 {
     // Discover reporters added via plugin.
-    _DiscoverReporters();
+    _collector.Discover<ReporterFactory>(_stage);
 
     // Register all reporters
-    for (auto& element : _reporters) {
-        element.second->Register();
+    for (auto& item : _collector.GetItems()) {
+        item.second->Register();
     }
 }
 
 ReporterManagerWeakPtr ReporterManager::Create(
     const PXR_NS::UsdStageWeakPtr& stage)
 {
-    _CleanCache();
-
-    // If a manager doesn't exist for the given stage, create one.
-    if (Registry.find(stage) == Registry.end()) {
-        Registry[stage] = TfCreateRefPtr(new ReporterManager(stage));
-    }
-
-    return TfWeakPtr<ReporterManager>(Registry[stage]);
+    return TfWeakPtr<ReporterManager>(_registry.Add(stage));
 }
 
-size_t ReporterManager::GetNumReporters() { return _reporters.size(); }
+size_t ReporterManager::GetNumReporters() { return _collector.Size(); }
 
-size_t ReporterManager::GetNumManagers() { return Registry.size(); }
+size_t ReporterManager::GetNumManagers() { return _registry.Size(); }
 
-void ReporterManager::Reset() { Registry.erase(_stage); }
+void ReporterManager::Reset() { _registry.Remove(_stage); }
 
 void ReporterManager::Reset(const PXR_NS::UsdStageWeakPtr& stage)
 {
-    Registry.erase(stage);
+    _registry.Remove(stage);
 }
 
-void ReporterManager::ResetAll() { Registry.clear(); }
-
-void ReporterManager::_CleanCache()
-{
-    for (auto it = Registry.begin(); it != Registry.end();) {
-        // If the stage doesn't exist anymore, delete the corresponding
-        // manager from the registry.
-        if (it->first.IsExpired()) {
-            it = Registry.erase(it);
-        }
-        else {
-            it++;
-        }
-    }
-}
-
-void ReporterManager::_DiscoverReporters()
-{
-    TfType root = TfType::Find<Reporter>();
-    std::set<TfType> types;
-    PlugRegistry::GetAllDerivedTypes(root, &types);
-
-    for (const TfType& type : types) {
-        _LoadFromPlugins<ReporterPtr, ReporterFactory>(type);
-    }
-}
-
-void ReporterManager::_Add(const ReporterPtr& reporter)
-{
-    auto identifier = typeid(*reporter).name();
-    _reporters[identifier] = reporter;
-}
+void ReporterManager::ResetAll() { _registry.Clear(); }
 
 }  // namespace unf
