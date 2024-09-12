@@ -13,6 +13,9 @@
 #include <pxr/pxr.h>
 #include <pxr/usd/usd/common.h>
 
+#include <typeinfo>
+#include <string>
+
 namespace unf {
 
 /// \class Dispatcher
@@ -32,7 +35,10 @@ class Dispatcher : public PXR_NS::TfRefBase, public PXR_NS::TfWeakBase {
     ///
     /// \sa
     /// Broker::GetDispatcher
-    UNF_API virtual std::string GetIdentifier() const = 0;
+    UNF_API virtual std::string GetIdentifier() const
+    {
+        return typeid(*this).name();
+    }
 
     ///  Register listeners to PXR_NS::TfNotice derived notices.
     UNF_API virtual void Register() = 0;
@@ -114,7 +120,7 @@ class StageDispatcher : public Dispatcher {
     StageDispatcher(const BrokerWeakPtr& broker);
 
     /// Only a Broker can create a StageDispatcher.
-    friend class Broker;
+    friend class Collector<Dispatcher>;
 };
 
 /// \class DispatcherFactory

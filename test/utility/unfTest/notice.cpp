@@ -27,6 +27,10 @@ TF_REGISTRY_FUNCTION(TfType)
 
     TfType::
         Define<OutputNotice2, TfType::Bases<unf::UnfNotice::StageNotice> >();
+
+    TfType::Define<TestReporterNotice1, TfType::Bases<TfNotice> >();
+    TfType::Define<TestReporterNotice2, TfType::Bases<TfNotice> >();
+    TfType::Define<ChildReporterNotice, TfType::Bases<TfNotice> >();
 }
 
 MergeableNotice::MergeableNotice(const DataMap& data) : _data(data) {}

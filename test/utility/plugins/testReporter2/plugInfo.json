@@ -1,0 +1,16 @@
+{
+  "Plugins": [
+    {
+      "Info": {
+        "Types": {
+          "Test::TestReporter2": {
+            "bases": [ "unf::Reporter" ]
+          }
+        }
+      },
+      "LibraryPath": "$<TARGET_FILE:unfTestTestReporter2>",
+      "Name": "TestReporter2",
+      "Type": "library"
+    }
+  ]
+}

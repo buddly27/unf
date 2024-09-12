@@ -13,34 +13,28 @@ PXR_NAMESPACE_USING_DIRECTIVE
 namespace unf {
 
 // Initiate static registry.
-std::unordered_map<UsdStageWeakPtr, BrokerPtr, Broker::UsdStageWeakPtrHasher>
-    Broker::Registry;
+Registry<Broker> Broker::_registry;
 
 Broker::Broker(const UsdStageWeakPtr& stage) : _stage(stage)
 {
+    auto self = TfCreateWeakPtr(this);
+
     // Add default dispatcher.
-    _AddDispatcher<StageDispatcher>();
+    _collector.Add<StageDispatcher>(self);
 
     // Discover dispatchers added via plugin to complete or override
     // default dispatcher.
-    _DiscoverDispatchers();
+    _collector.Discover<DispatcherFactory>(self);
 
     // Register all dispatchers
-    for (auto& element : _dispatcherMap) {
+    for (auto& element : _collector.GetItems()) {
         element.second->Register();
     }
 }
 
 BrokerPtr Broker::Create(const UsdStageWeakPtr& stage)
 {
-    Broker::_CleanCache();
-
-    // If there doesn't exist a broker for the given stage, create a new broker.
-    if (Registry.find(stage) == Registry.end()) {
-        Registry[stage] = TfCreateRefPtr(new Broker(stage));
-    }
-
-    return Registry[stage];
+    return _registry.Add(stage);
 }
 
 bool Broker::IsInTransaction() { return _mergers.size() > 0; }
@@ -89,44 +83,14 @@ void Broker::Send(const UnfNotice::StageNoticeRefPtr& notice)
     }
 }
 
-DispatcherPtr& Broker::GetDispatcher(std::string identifier)
+TfWeakPtr<Dispatcher> Broker::GetDispatcher(std::string identifier)
 {
-    return _dispatcherMap.at(identifier);
+    return _collector.Get(identifier);
 }
 
-void Broker::Reset() { Registry.erase(_stage); }
+void Broker::Reset() { _registry.Remove(_stage); }
 
-void Broker::ResetAll() { Registry.clear(); }
-
-void Broker::_CleanCache()
-{
-    for (auto it = Registry.begin(); it != Registry.end();) {
-        // If the stage doesn't exist anymore, delete the corresponding
-        // broker from the registry.
-        if (it->second->GetStage().IsExpired()) {
-            it = Registry.erase(it);
-        }
-        else {
-            it++;
-        }
-    }
-}
-
-void Broker::_DiscoverDispatchers()
-{
-    TfType root = TfType::Find<Dispatcher>();
-    std::set<TfType> types;
-    PlugRegistry::GetAllDerivedTypes(root, &types);
-
-    for (const TfType& type : types) {
-        _LoadFromPlugins<DispatcherPtr, DispatcherFactory>(type);
-    }
-}
-
-void Broker::_Add(const DispatcherPtr& dispatcher)
-{
-    _dispatcherMap[dispatcher->GetIdentifier()] = dispatcher;
-}
+void Broker::ResetAll() { _registry.Clear(); }
 
 Broker::_NoticeMerger::_NoticeMerger(CapturePredicate predicate)
     : _predicate(std::move(predicate))
