@@ -51,6 +51,7 @@ jobs:
           call "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat"
           set VCPKG_TARGET_TRIPLET=x64-windows
           set CMAKE_TOOLCHAIN_FILE=%VCPKG_INSTALLATION_ROOT%/scripts/buildsystems/vcpkg.cmake
+          set VERBOSE=1
           git clone https://github.com/PixarAnimationStudios/OpenUSD.git ^
               --depth 1 --branch ${{ matrix.usd }} ./src
           python ./src/build_scripts/build_usd.py . ^
@@ -62,7 +63,8 @@ jobs:
               --no-docs ^
               --no-imaging ^
               --no-materialx ^
-              -v
+              -j 1 ^
+              -vvv
 
       - name: Configure & Build
         shell: bash
